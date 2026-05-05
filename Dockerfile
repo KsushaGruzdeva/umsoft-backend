@@ -16,6 +16,13 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Копируем сертификат из хоста в контейнер
+COPY russian_trusted_root_ca.cer /tmp/russian_trusted_root_ca.cer
+
+# Импортируем сертификат в Java truststore
+RUN keytool -importcert -trustcacerts -cacerts -storepass changeit -noprompt -alias rus_root_ca -file /tmp/russian_trusted_root_ca.cer && \
+    rm /tmp/russian_trusted_root_ca.cer
+
 # Копируем JAR из этапа сборки
 COPY --from=builder /app/target/*.jar app.jar
 

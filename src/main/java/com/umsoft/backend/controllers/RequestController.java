@@ -14,7 +14,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/requests")
-@CrossOrigin(origins = "http://localhost:3000")
 public class RequestController {
 
     @Autowired
