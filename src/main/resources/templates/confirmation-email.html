@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Подтверждение заявки</title>
+    </head>
+    <body>
+        <h2>✅ Здравствуйте, <span th:text="${userFullName}"></span>!</h2>
+
+        <p>Ваша заявка успешно принята.</p>
+
+        <p>Содержание вашей заявки:</p>
+        <blockquote th:text="${requestDescription}"></blockquote>
+
+        <p>Мы свяжемся с вами в ближайшее время.</p>
+
+        <hr>
+        <p>С уважением,<br>Команда Умный Софт</p>
+    </body>
+</html>

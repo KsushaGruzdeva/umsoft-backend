@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Новая заявка</title>
+    </head>
+    <body>
+        <h2>🔧 Новая заявка # <span th:text="${requestId}"></span></h2>
+
+        <h3>📂 Категория: <span th:text="${category}"></span></h3>
+
+        <h3>📝 Описание задачи:</h3>
+        <p th:text="${taskDescription}"></p>
+
+        <h3>📋 Подробности:</h3>
+        <pre th:text="${summary}"></pre>
+
+        <h3>👤 Информация о клиенте:</h3>
+        <ul>
+            <li>ФИО: <span th:text="${userFullName}"></span></li>
+            <li>Email: <span th:text="${userEmail}"></span></li>
+            <li>Телефон: <span th:text="${userPhone}"></span></li>
+        </ul>
+
+        <hr>
+        <p>Пожалуйста, обработайте заявку в ближайшее время.</p>
+    </body>
+</html>

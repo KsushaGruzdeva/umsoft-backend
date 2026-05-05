@@ -1,0 +1,33 @@
+# Compiled output
+/target/
+/classes/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Application specific
+application-local.properties
+application-dev.properties
