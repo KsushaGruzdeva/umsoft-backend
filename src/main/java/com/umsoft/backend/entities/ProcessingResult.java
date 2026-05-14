@@ -17,8 +17,8 @@ public class ProcessingResult {
     @Column(name = "confidence_score")
     private Double confidenceScore;
 
-    @Column(name = "generated_email_text", columnDefinition = "TEXT")
-    private String generatedEmailText;
+//    @Column(name = "generated_email_text", columnDefinition = "TEXT")
+//    private String generatedEmailText;
 
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
@@ -51,9 +51,9 @@ public class ProcessingResult {
         return confidenceScore;
     }
 
-    public String getGeneratedEmailText() {
-        return generatedEmailText;
-    }
+//    public String getGeneratedEmailText() {
+//        return generatedEmailText;
+//    }
 
     public LocalDateTime getProcessedAt() {
         return processedAt;
@@ -75,9 +75,9 @@ public class ProcessingResult {
         this.confidenceScore = confidenceScore;
     }
 
-    public void setGeneratedEmailText(String generatedEmailText) {
-        this.generatedEmailText = generatedEmailText;
-    }
+//    public void setGeneratedEmailText(String generatedEmailText) {
+//        this.generatedEmailText = generatedEmailText;
+//    }
 
     public void setProcessedAt(LocalDateTime processedAt) {
         this.processedAt = processedAt;

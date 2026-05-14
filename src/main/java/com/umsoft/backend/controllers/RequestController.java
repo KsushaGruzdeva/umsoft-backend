@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.umsoft.backend.dtos.RequestDto;
 import com.umsoft.backend.dtos.ResponseDto;
-import com.umsoft.backend.entities.Request;
 import com.umsoft.backend.services.RequestService;
 
 import jakarta.validation.Valid;
@@ -42,54 +41,6 @@ public class RequestController {
                     "ERROR"
             );
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto> getRequestStatus(@PathVariable Long id) {
-        System.out.println("📥 Получен GET запрос на получение статуса заявки: " + id);
-
-        try {
-            Request request = requestService.getRequestStatus(id);
-
-            if (request == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new ResponseDto(false, "Заявка не найдена", null, null)
-                );
-            }
-
-            String message = getStatusMessage(request.getStatus());
-
-            return ResponseEntity.ok(
-                    new ResponseDto(true, message, request.getId(), request.getStatus())
-            );
-        } catch (Exception e) {
-            System.err.println("❌ Ошибка при получении статуса заявки: " + e.getMessage());
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new ResponseDto(false, "Ошибка при получении статуса: " + e.getMessage(), null, null)
-            );
-        }
-    }
-
-    private String getStatusMessage(String status) {
-        if (status == null) return "Статус неизвестен";
-
-        switch (status) {
-            case "NEW":
-                return "Заявка принята, ожидает обработки";
-            case "PROCESSING":
-                return "Заявка обрабатывается";
-            case "CLASSIFIED":
-                return "Заявка классифицирована";
-            case "SENT":
-                return "Заявка отправлена в отдел";
-            case "ERROR":
-                return "При обработке заявки произошла ошибка";
-            case "COMPLETED":
-                return "Заявка успешно обработана";
-            default:
-                return "Статус: " + status;
         }
     }
 }

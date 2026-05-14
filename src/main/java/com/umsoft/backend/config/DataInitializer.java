@@ -27,25 +27,25 @@ public class DataInitializer implements CommandLineRunner {
             Department mobileDept = departmentRepository.create(new Department(
                     "Отдел мобильной разработки",
                     "Разработка мобильных приложений под iOS и Android",
-                    "gruzdeva.ksusha11@gmail.com"
+                    "mobile-UmSoft@yandex.ru"
             ));
 
             Department webDept = departmentRepository.create(new Department(
                     "Отдел веб-разработки",
                     "Разработка веб-приложений и сайтов",
-                    "gruzdeva.ksusha11@gmail.com"
+                    "web_umsoft@rambler.ru"
             ));
 
             Department integrationDept = departmentRepository.create(new Department(
-                    "Отдел системной интеграции",
-                    "Интеграция систем и внедрение ПО",
-                    "gruzdeva.ksusha11@gmail.com"
+                    "Отдел внедрения ПО",
+                    "Внедрение ПО",
+                    "integration_umsoft@mail.ru"
             ));
 
             Department otherDept = departmentRepository.create(new Department(
                     "Общий отдел",
                     "Общие вопросы",
-                    "gruzdeva.ksusha11@gmail.com"
+                    "info-UmSoft@yandex.ru"
             ));
 
             categoryRepository.create(new Category(
