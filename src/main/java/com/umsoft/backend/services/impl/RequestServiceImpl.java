@@ -49,7 +49,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ResponseDto processRequest(RequestDto requestDto) {
-        // Создаем отправителя
+        // 1. Создаём отправителя
         Submitter submitter = new Submitter(
                 requestDto.getFio(),
                 requestDto.getEmail(),
@@ -57,7 +57,7 @@ public class RequestServiceImpl implements RequestService {
         );
         submitterRepository.create(submitter);
 
-        // Создаем заявку со статусом NEW
+        // 2. Создаём заявку со статусом NEW
         Request request = new Request(
                 requestDto.getTask(),
                 "NEW",
@@ -67,15 +67,30 @@ public class RequestServiceImpl implements RequestService {
         Request savedRequest = requestRepository.create(request);
         System.out.println("✅ Заявка создана с ID: " + savedRequest.getId());
 
-        // Асинхронная обработка через GigaChat (не блокируем ответ пользователю)
+        // 3. Сразу отправляем подтверждение клиенту (асинхронно, с повторными попытками)
+        sendImmediateConfirmation(savedRequest);
+
+        // 4. Запускаем асинхронную обработку (классификация + письмо в отдел)
         processRequestAsync(savedRequest, requestDto.getTask());
 
+        // 5. Немедленный ответ пользователю
         return new ResponseDto(
                 true,
-                "Заявка успешно принята в обработку",
+                "Заявка успешно принята в обработку! Если не пришло подтверждение на почту в течении трех минут, отправьте заново",
                 savedRequest.getId(),
                 savedRequest.getStatus()
         );
+    }
+
+    @Async
+    public void sendImmediateConfirmation(Request request) {
+        try {
+            emailService.sendConfirmationToClient(request);
+            System.out.println("📧 Письмо-подтверждение клиенту отправлено (асинхронно) для заявки ID: " + request.getId());
+        } catch (Exception e) {
+            System.err.println("❌ Ошибка при отправке письма-подтверждения клиенту для заявки ID: " + request.getId());
+            e.printStackTrace();
+        }
     }
 
     @Async
@@ -123,26 +138,22 @@ public class RequestServiceImpl implements RequestService {
 
             // Отправляем email в соответствующий отдел
             String assignedEmail = classification.getAssignedEmail();
-
-            // Проверяем, что email получен
             if (assignedEmail == null || assignedEmail.isEmpty()) {
-                System.err.println("⚠️ Email отдела не получен от классификатора, использую fallback");
+                System.err.println("⚠️ Email отдела не получен от классификатора, использую email из отдела БД");
                 if (department != null && department.getEmailAddress() != null) {
                     assignedEmail = department.getEmailAddress();
+                } else {
+                    assignedEmail = "info@umsoft.ru";
                 }
             }
 
             System.out.println("📧 Отправка письма в отдел на email: " + assignedEmail);
-
             emailService.sendRequestEmail(
                     request,
                     classification.getCategoryName(),
                     classification.getSummary(),
                     assignedEmail
             );
-
-            // Отправляем подтверждение клиенту
-            emailService.sendConfirmationToClient(request);
 
             // Обновляем статус на SENT
             request.setStatus("SENT");
