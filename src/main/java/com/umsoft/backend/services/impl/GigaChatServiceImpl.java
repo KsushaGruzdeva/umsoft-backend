@@ -1,10 +1,11 @@
 package com.umsoft.backend.services.impl;
 
-import chat.giga.client.GigaChatClient;
-import chat.giga.model.completion.CompletionRequest;
-import chat.giga.model.completion.ChatMessage;
-import chat.giga.model.completion.CompletionResponse;
-import chat.giga.model.completion.ChatMessageRole;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umsoft.backend.dtos.ClassificationResult;
@@ -13,11 +14,12 @@ import com.umsoft.backend.entities.Department;
 import com.umsoft.backend.repositories.CategoryRepository;
 import com.umsoft.backend.repositories.DepartmentRepository;
 import com.umsoft.backend.services.GigaChatService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import chat.giga.client.GigaChatClient;
+import chat.giga.model.completion.ChatMessage;
+import chat.giga.model.completion.ChatMessageRole;
+import chat.giga.model.completion.CompletionRequest;
+import chat.giga.model.completion.CompletionResponse;
 
 @Service
 public class GigaChatServiceImpl implements GigaChatService {
@@ -82,20 +84,17 @@ public class GigaChatServiceImpl implements GigaChatService {
     @Override
     public ClassificationResult classifyAndSummarize(String text) {
         try {
-            // Проверяем, есть ли категории в БД
             List<Category> categories = getCategories();
             if (categories.isEmpty()) {
-                System.err.println("⚠️ В БД нет ни одной категории! Используем fallback.");
                 return fallbackClassification(text);
             }
-
             String prompt = buildTechnicalPrompt(text);
-
             CompletionRequest request = CompletionRequest.builder()
                     .model("GigaChat-Pro")
                     .message(ChatMessage.builder()
                             .role(ChatMessageRole.SYSTEM)
-                            .content("Ты - технический эксперт компании. Преобразуй запрос в структурированное ТЗ. Верни строго JSON без пояснений.")
+                            .content("Ты - технический эксперт компании. " +
+                                    "Преобразуй запрос в структурированное ТЗ. Верни строго JSON без пояснений.")
                             .build())
                     .message(ChatMessage.builder()
                             .role(ChatMessageRole.USER)
@@ -104,20 +103,13 @@ public class GigaChatServiceImpl implements GigaChatService {
                     .temperature(0.2f)
                     .maxTokens(1000)
                     .build();
-
             CompletionResponse response = gigaChatClient.completions(request);
-
             if (response != null && response.choices() != null && !response.choices().isEmpty()) {
                 String content = response.choices().get(0).message().content();
-                System.out.println("📥 Получен ответ от GigaChat");
                 return parseStructuredResponse(content, text);
             }
-
-            System.err.println("❌ Пустой ответ от GigaChat");
             return fallbackClassification(text);
-
         } catch (Exception e) {
-            System.err.println("❌ Ошибка при вызове GigaChat API: " + e.getMessage());
             e.printStackTrace();
             return fallbackClassification(text);
         }
@@ -199,7 +191,7 @@ public class GigaChatServiceImpl implements GigaChatService {
                 if (matchedCategory != null) {
                     categoryName = matchedCategory.getName();
                     categoryCode = matchedCategory.getCode();
-                    System.out.println("🔍 Найдена похожая категория: " + categoryName + " (код: " + categoryCode + ")");
+                    System.out.println("Найдена похожая категория: " + categoryName + " (код: " + categoryCode + ")");
                 }
             }
 
@@ -213,7 +205,7 @@ public class GigaChatServiceImpl implements GigaChatService {
                 finalCategoryName = matchedCategory.getName();
             } else {
                 // Если категория не найдена, используем fallback
-                System.err.println("⚠️ Категория не найдена. Название: '" + categoryName + "', код: '" + categoryCode + "'");
+                System.err.println("Категория не найдена. Название: '" + categoryName + "', код: '" + categoryCode + "'");
                 return fallbackClassification(originalText);
             }
 
@@ -255,14 +247,14 @@ public class GigaChatServiceImpl implements GigaChatService {
             result.setAssignedEmail(assignedEmail);
             result.setConfidenceScore(0.95);
 
-            System.out.println("🤖 GigaChat классификация: " + finalCategoryName + " (код: " + finalCategoryCode + ")");
-            System.out.println("📧 Email отдела: " + assignedEmail);
-            System.out.println("📋 Сформированное ТЗ:\n" + structuredSummary);
+            System.out.println("GigaChat классификация: " + finalCategoryName + " (код: " + finalCategoryCode + ")");
+            System.out.println("Email отдела: " + assignedEmail);
+            System.out.println("Сформированное ТЗ:\n" + structuredSummary);
 
             return result;
 
         } catch (Exception e) {
-            System.err.println("❌ Ошибка парсинга ответа GigaChat: " + e.getMessage());
+            System.err.println("Ошибка парсинга ответа GigaChat: " + e.getMessage());
             e.printStackTrace();
             return fallbackClassification(originalText);
         }
@@ -323,10 +315,10 @@ public class GigaChatServiceImpl implements GigaChatService {
         if (category != null) {
             Department department = category.getDepartment();
             if (department != null && department.getEmailAddress() != null && !department.getEmailAddress().isEmpty()) {
-                System.out.println("📧 Найден email для отдела " + department.getName() + ": " + department.getEmailAddress());
+                System.out.println("Найден email для отдела " + department.getName() + ": " + department.getEmailAddress());
                 return department.getEmailAddress();
             } else if (department != null) {
-                System.err.println("⚠️ У отдела " + department.getName() + " не указан email");
+                System.err.println("У отдела " + department.getName() + " не указан email");
             }
         }
         return getDefaultEmail();
@@ -341,11 +333,11 @@ public class GigaChatServiceImpl implements GigaChatService {
                 .orElse(null);
 
         if (firstDeptWithEmail != null) {
-            System.out.println("📧 Используем дефолтный email отдела: " + firstDeptWithEmail.getEmailAddress());
+            System.out.println("Используем дефолтный email отдела: " + firstDeptWithEmail.getEmailAddress());
             return firstDeptWithEmail.getEmailAddress();
         }
 
-        System.err.println("⚠️ В БД нет отделов с email! Используем заглушку.");
+        System.err.println("В БД нет отделов с email! Используем заглушку.");
         return "default@company.com";
     }
 
@@ -404,11 +396,11 @@ public class GigaChatServiceImpl implements GigaChatService {
             result.setCategory(matchedCategory.getCode());
             result.setCategoryName(matchedCategory.getName());
             result.setSummary(text != null && !text.isEmpty() ?
-                    "📝 " + (text.length() <= 200 ? text : text.substring(0, 197) + "...") : "Нет текста");
+                    (text.length() <= 200 ? text : text.substring(0, 197) + "...") : "Нет текста");
             result.setAssignedEmail(department != null ? department.getEmailAddress() : getDefaultEmail());
             result.setConfidenceScore(0.70);
 
-            System.out.println("🔍 Fallback классификация: " + matchedCategory.getName() +
+            System.out.println("Fallback классификация: " + matchedCategory.getName() +
                     " (код: " + matchedCategory.getCode() + ", совпадений: " + maxMatches + ")");
 
             return result;
@@ -426,7 +418,7 @@ public class GigaChatServiceImpl implements GigaChatService {
         result.setAssignedEmail(defaultDept != null ? defaultDept.getEmailAddress() : getDefaultEmail());
         result.setConfidenceScore(0.60);
 
-        System.out.println("⚠️ Используем категорию по умолчанию: " + defaultCategory.getName() +
+        System.out.println("Используем категорию по умолчанию: " + defaultCategory.getName() +
                 " (код: " + defaultCategory.getCode() + ")");
 
         return result;

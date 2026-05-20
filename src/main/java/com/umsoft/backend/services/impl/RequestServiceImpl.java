@@ -49,7 +49,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ResponseDto processRequest(RequestDto requestDto) {
-        // 1. Создаём отправителя
         Submitter submitter = new Submitter(
                 requestDto.getFio(),
                 requestDto.getEmail(),
@@ -57,7 +56,6 @@ public class RequestServiceImpl implements RequestService {
         );
         submitterRepository.create(submitter);
 
-        // 2. Создаём заявку со статусом NEW
         Request request = new Request(
                 requestDto.getTask(),
                 "NEW",
@@ -65,18 +63,16 @@ public class RequestServiceImpl implements RequestService {
         );
 
         Request savedRequest = requestRepository.create(request);
-        System.out.println("✅ Заявка создана с ID: " + savedRequest.getId());
+        System.out.println("Заявка создана с ID: " + savedRequest.getId());
 
-        // 3. Сразу отправляем подтверждение клиенту (асинхронно, с повторными попытками)
         sendImmediateConfirmation(savedRequest);
 
-        // 4. Запускаем асинхронную обработку (классификация + письмо в отдел)
         processRequestAsync(savedRequest, requestDto.getTask());
 
-        // 5. Немедленный ответ пользователю
         return new ResponseDto(
                 true,
-                "Заявка успешно принята в обработку! Если не пришло подтверждение на почту в течении трех минут, отправьте заново",
+                "Заявка успешно принята в обработку! " +
+                        "Если не пришло подтверждение на почту в течении трех минут, отправьте заново",
                 savedRequest.getId(),
                 savedRequest.getStatus()
         );
@@ -86,9 +82,9 @@ public class RequestServiceImpl implements RequestService {
     public void sendImmediateConfirmation(Request request) {
         try {
             emailService.sendConfirmationToClient(request);
-            System.out.println("📧 Письмо-подтверждение клиенту отправлено (асинхронно) для заявки ID: " + request.getId());
+            System.out.println("Письмо-подтверждение клиенту отправлено (асинхронно) для заявки ID: " + request.getId());
         } catch (Exception e) {
-            System.err.println("❌ Ошибка при отправке письма-подтверждения клиенту для заявки ID: " + request.getId());
+            System.err.println("Ошибка при отправке письма-подтверждения клиенту для заявки ID: " + request.getId());
             e.printStackTrace();
         }
     }
@@ -97,7 +93,7 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public void processRequestAsync(Request request, String taskDescription) {
         try {
-            System.out.println("🔄 Начало асинхронной обработки заявки ID: " + request.getId());
+            System.out.println("Начало асинхронной обработки заявки ID: " + request.getId());
 
             // Обновляем статус на PROCESSING
             request.setStatus("PROCESSING");
@@ -106,7 +102,7 @@ public class RequestServiceImpl implements RequestService {
             // Отправляем запрос в GigaChat для классификации и суммаризации
             ClassificationResult classification = gigaChatService.classifyAndSummarize(taskDescription);
 
-            System.out.println("🤖 Результат классификации: категория=" + classification.getCategoryName() +
+            System.out.println("Результат классификации: категория=" + classification.getCategoryName() +
                     ", уверенность=" + classification.getConfidenceScore());
 
             // Находим категорию и отдел по результатам классификации
@@ -139,7 +135,7 @@ public class RequestServiceImpl implements RequestService {
             // Отправляем email в соответствующий отдел
             String assignedEmail = classification.getAssignedEmail();
             if (assignedEmail == null || assignedEmail.isEmpty()) {
-                System.err.println("⚠️ Email отдела не получен от классификатора, использую email из отдела БД");
+                System.err.println("Email отдела не получен от классификатора, использую email из отдела БД");
                 if (department != null && department.getEmailAddress() != null) {
                     assignedEmail = department.getEmailAddress();
                 } else {
@@ -147,7 +143,7 @@ public class RequestServiceImpl implements RequestService {
                 }
             }
 
-            System.out.println("📧 Отправка письма в отдел на email: " + assignedEmail);
+            System.out.println("Отправка письма в отдел на email: " + assignedEmail);
             emailService.sendRequestEmail(
                     request,
                     classification.getCategoryName(),
@@ -159,10 +155,10 @@ public class RequestServiceImpl implements RequestService {
             request.setStatus("SENT");
             requestRepository.update(request);
 
-            System.out.println("✅ Заявка ID: " + request.getId() + " успешно обработана");
+            System.out.println("Заявка ID: " + request.getId() + " успешно обработана");
 
         } catch (Exception e) {
-            System.err.println("❌ Ошибка при асинхронной обработке заявки ID: " + request.getId());
+            System.err.println("Ошибка при асинхронной обработке заявки ID: " + request.getId());
             e.printStackTrace();
 
             request.setStatus("ERROR");

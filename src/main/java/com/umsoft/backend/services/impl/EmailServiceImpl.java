@@ -1,6 +1,7 @@
 package com.umsoft.backend.services.impl;
 
-import jakarta.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,7 +15,7 @@ import com.umsoft.backend.entities.Request;
 import com.umsoft.backend.repositories.EmailRepository;
 import com.umsoft.backend.services.EmailService;
 
-import java.time.LocalDateTime;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -74,13 +75,13 @@ public class EmailServiceImpl implements EmailService {
                 emailLog.setContent(htmlContent);
 
                 System.out.println("\n" + "=".repeat(60));
-                System.out.println("✅ Email в отдел УСПЕШНО ОТПРАВЛЕН");
+                System.out.println("Email в отдел УСПЕШНО ОТПРАВЛЕН");
                 System.out.println("Кому: " + assignedEmail);
                 System.out.println("Тема: Новая заявка: " + category);
                 System.out.println("=".repeat(60) + "\n");
 
             } catch (Exception e) {
-                System.err.println("❌ Ошибка при отправке email в отдел: " + e.getMessage());
+                System.err.println("Ошибка при отправке email в отдел: " + e.getMessage());
                 emailLog.setStatus("FAILED");
                 emailLog.setErrorMessage(e.getMessage());
                 e.printStackTrace();
@@ -90,7 +91,7 @@ public class EmailServiceImpl implements EmailService {
             emailRepository.create(emailLog);
 
         } catch (Exception e) {
-            System.err.println("❌ Критическая ошибка при отправке email в отдел: " + e.getMessage());
+            System.err.println("Критическая ошибка при отправке email в отдел: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -134,13 +135,13 @@ public class EmailServiceImpl implements EmailService {
                 emailLog.setContent(htmlContent);
 
                 System.out.println("\n" + "=".repeat(60));
-                System.out.println("✅ Подтверждение клиенту УСПЕШНО ОТПРАВЛЕНО");
+                System.out.println("Подтверждение клиенту УСПЕШНО ОТПРАВЛЕНО");
                 System.out.println("Кому: " + request.getSubmitter().getEmail());
                 System.out.println("Заявка №: " + request.getId());
                 System.out.println("=".repeat(60) + "\n");
 
             } catch (Exception e) {
-                System.err.println("❌ Ошибка при отправке подтверждения клиенту: " + e.getMessage());
+                System.err.println("Ошибка при отправке подтверждения клиенту: " + e.getMessage());
                 emailLog.setStatus("FAILED");
                 emailLog.setErrorMessage(e.getMessage());
                 e.printStackTrace();
@@ -150,7 +151,7 @@ public class EmailServiceImpl implements EmailService {
             emailRepository.create(emailLog);
 
         } catch (Exception e) {
-            System.err.println("❌ Критическая ошибка при отправке подтверждения клиенту: " + e.getMessage());
+            System.err.println("Критическая ошибка при отправке подтверждения клиенту: " + e.getMessage());
             e.printStackTrace();
         }
     }
